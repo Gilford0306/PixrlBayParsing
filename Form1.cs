@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Helpers;
 using System.Windows.Forms;
@@ -16,6 +17,7 @@ namespace PixrlBayParsing
 {
     public partial class Form1 : Form
     {
+        string search = string.Empty;
         public Form1()
         {
             InitializeComponent();
@@ -24,46 +26,23 @@ namespace PixrlBayParsing
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string str = textBox1.Text.ToLower().Replace(' ', '+');
-            string url = $"https://pixabay.com/api/?key=39207646-8ccbcc7ff50179f772c7bccff&q={str}";
+
+            string url = $"https://pixabay.com/api/?key=39207646-8ccbcc7ff50179f772c7bccff&q={search}";
             WebClient client = new WebClient();
             string result = client.DownloadString(url);
             Root root = JsonSerializer.Deserialize<Root>(result);
-            
-            for (int i = 0; i < 20; i++)
+
+            for (int i = 0; i < 15; i++)
             {
-                try { client.DownloadFile(root.hits[i].largeImageURL, $"{i}.jpg");  }     
+
+                try {
+                        client.DownloadFile(root.hits[i].largeImageURL, $"{i}.jpg");
+
+                    }     
 
                 catch { }
                 
             }
-
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    PictureBox picture = new PictureBox
-            //    {
-            //        Name = $"pictureBox{i}",
-            //        ImageLocation = $@"{i}.jpg",
-            //        SizeMode = PictureBoxSizeMode.StretchImage
-            //    };
-            //    pictureBox.Controls.Add(picture);
-            //}
-            //PictureBox picture = new PictureBox
-            //{
-            //    Name = "pictureBox",
-            //    ImageLocation = @"0.jpg",
-            //    SizeMode = PictureBoxSizeMode.StretchImage
-            //};
-
-            //pictureBox1.Controls.Add(picture);
-            //picture = new PictureBox
-            //{
-            //    Name = "pictureBox",
-            //    ImageLocation = @"1.jpg",
-            //    SizeMode = PictureBoxSizeMode.StretchImage
-            //};
-            //pictureBox2.Controls.Add(picture);
-
 
             List<PictureBox> picturebox = new List<PictureBox>();
             var CurDir = Directory.GetCurrentDirectory();
@@ -71,8 +50,9 @@ namespace PixrlBayParsing
             var recentpics = directoryInfo.GetFiles().ToList();
             var y = 10;
             flowLayoutPanel1.Controls.Clear();
-            for (int i = 0; i < 20; i++)
-                {
+            for (int i = 0; i < 15; i++)
+            {
+                
                 try
                 {
                     var pb = new PictureBox();
@@ -80,10 +60,16 @@ namespace PixrlBayParsing
                     pb.Location = new Point(picturebox.Count * 120 + 20, y);
                     pb.Size = new Size(200, 120);
                     pb.Name = i.ToString();
+
                     try
                     {
+                        Image img;
+                        using (var bmpTemp = new Bitmap($"{i}.jpg"))
+                        {
+                            img = new Bitmap(bmpTemp);
+                        }
+                        pb.Image = img;
 
-                        pb.Image = Image.FromFile($"{i}.jpg");
                     }
                     catch (OutOfMemoryException) { continue; }
                     pb.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -94,7 +80,7 @@ namespace PixrlBayParsing
                 catch (Exception)
                 {
 
-                    
+
                 }
 
             }
@@ -131,5 +117,18 @@ namespace PixrlBayParsing
                 }
             }
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+             search = textBox1.Text.ToLower().Replace(' ', '+');
+        }
+
+
+        
     }
 }
